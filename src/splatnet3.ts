@@ -14,7 +14,6 @@ import {
   VarsMap,
 } from "./types.ts";
 import { DEFAULT_ENV, Env } from "./env.ts";
-import { getBulletToken, getGToken } from "./iksm.ts";
 import { battleTime, parseHistoryDetailId } from "./utils.ts";
 
 export class Splatnet3 {
@@ -94,33 +93,37 @@ export class Splatnet3 {
     const state = this.profile.state;
     const sessionToken = state.loginState?.sessionToken;
 
+		const tmpConfig = Deno.makeTempFileSync();
+		Deno.writeTextFileSync(tmpConfig, JSON.stringify(this.profile.state));
+
+		const cmdOutput = new Deno.Command("nxapi", { args: ["util", "update-s3si-token", tmpConfig] }).outputSync();
+		if (!cmdOutput.success) {
+			throw new Error("Failed to update token using nxapi");
+		}
+
+		const newState = JSON.parse(Deno.readTextFileSync(tmpConfig));
+		Deno.removeSync(tmpConfig);
+
+		if (!newState?.loginState?.gToken) {
+			throw new Error("Updated profile is missing gToken")
+		}
+		if (!newState?.loginState?.bulletToken) {
+			throw new Error("Updated profile is missing bulletToken")
+		}
+
     if (!sessionToken) {
       throw new Error("Session token is not set.");
     }
-
-    const { webServiceToken, userCountry, userLang } = await getGToken({
-      fApi: state.fGen,
-      sessionToken,
-      env: this.env,
-    });
-
-    const bulletToken = await getBulletToken({
-      webServiceToken,
-      userLang,
-      userCountry,
-      appUserAgent: state.appUserAgent,
-      env: this.env,
-    });
 
     await this.profile.writeState({
       ...state,
       loginState: {
         ...state.loginState,
-        gToken: webServiceToken,
-        bulletToken,
+        gToken: newState.loginState.gToken,
+        bulletToken: newState.loginState.bulletToken,
       },
-      userLang: state.userLang ?? userLang,
-      userCountry: state.userCountry ?? userCountry,
+      userLang: state.userLang ?? newState.userLang,
+      userCountry: state.userCountry ?? newState.userCountry,
     });
   }
 
