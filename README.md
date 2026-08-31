@@ -1,4 +1,12 @@
-# s3si.ts
+# s3si.ts-nxapi
+
+## Fork Info
+This is a fork of s3si.ts that updates the SplatNet 3 token using an external installation of [nxapi](https://github.com/samuelthomas2774/nxapi), as the old token generation method no longer works under the new system by Nintendo.
+
+Make sure you have `nxapi` available:
+```sh
+npm i -g nxapi@next # The "@next" is very important!
+```
 
 [![Build status](https://github.com/spacemeowx2/s3si.ts/workflows/Build/badge.svg)](https://github.com/spacemeowx2/s3si.ts/actions/workflows/ci.yaml)
 
@@ -11,7 +19,7 @@ If you have used s3s, please see [here](#migrate-from-s3s).
 1. Install [Deno 2](https://docs.deno.com/runtime/)
 
 2. Run
-   `deno run -Ar https://raw.githubusercontent.com/spacemeowx2/s3si.ts/main/s3si.ts [options]`
+   `deno run -Ar https://raw.githubusercontent.com/North-West-Wind/s3si.ts-nxapi/main/s3si.ts [options]`
 
 ```
 Options:
